@@ -1,0 +1,6 @@
+{
+  "name": "محاكي الطيران المتكامل",
+  "description": "محاكي طيران ثلاثي الأبعاد بعالم مفتوح ولوبي اختيار طائرات حقيقية متنوعة مع منافسة حية.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
