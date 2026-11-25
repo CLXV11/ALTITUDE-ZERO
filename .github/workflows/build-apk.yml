@@ -60,18 +60,18 @@ jobs:
 
       - name: Configure landscape fullscreen & hardware acceleration
         run: |
-          node -e '
+          node << 'EOF'
           const fs = require("fs");
           const manifestPath = "android/app/src/main/AndroidManifest.xml";
           let xml = fs.readFileSync(manifestPath, "utf8");
           if (!xml.includes("android:hardwareAccelerated")) {
-            xml = xml.replace("<application", "<application android:hardwareAccelerated=\"true\"");
+            xml = xml.replace("<application", '<application android:hardwareAccelerated="true"');
           }
           if (!xml.includes("android:screenOrientation")) {
-            xml = xml.replace("<activity", "<activity android:screenOrientation=\"sensorLandscape\"");
+            xml = xml.replace("<activity", '<activity android:screenOrientation="sensorLandscape"');
           }
           fs.writeFileSync(manifestPath, xml, "utf8");
-          '
+          EOF
 
       - name: Build Debug APK
         working-directory: android
@@ -85,7 +85,6 @@ jobs:
           cp android/app/build/outputs/apk/debug/app-debug.apk release-apks/flight-sim-megatron-debug.apk
 
       - name: Build Signed Release APK (if keystore secret is set)
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
         working-directory: android
         env:
           KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -93,6 +92,10 @@ jobs:
           KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "No release keystore secret configured; skipping signed release APK."
+            exit 0
+          fi
           echo "$KEYSTORE_B64" | base64 -d > app/release-keystore.jks
           ./gradlew assembleRelease --no-daemon \
             -Pandroid.injected.signing.store.file="$(pwd)/app/release-keystore.jks" \
